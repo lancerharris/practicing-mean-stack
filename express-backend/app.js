@@ -26,7 +26,7 @@ app.post("/api/posts", (req, res, next) => {
   });
 });
 
-app.use("/api/posts", (req, res, next) => {
+app.get("/api/posts", (req, res, next) => {
   const posts = [
     { title: "first", content: "first content", id: "1" },
     { title: "second", content: "second content", id: "2" },
