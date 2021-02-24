@@ -1,3 +1,4 @@
+import { formatCurrency } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { NgForm } from '@angular/forms';
 
@@ -22,5 +23,6 @@ export class PostCreateComponent implements OnInit {
       return;
     }
     this.postsService.addPost(postForm.value.title, postForm.value.content);
+    postForm.resetForm();
   }
 }
