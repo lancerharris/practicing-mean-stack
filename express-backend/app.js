@@ -7,7 +7,7 @@ const Post = require("./models/post");
 const app = express();
 
 mongoose.connect(
-  `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@cluster0.evibd.mongodb.net/${process.env.MONGO_DEFAULT_DATABSE}?authSource=admin&replicaSet=atlas-fqrrap-shard-0&readPreference=primary&appname=MongoDB%20Compass&ssl=true`
+  `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@cluster0.evibd.mongodb.net/${process.env.MONGO_DEFAULT_DATABASE}?authSource=admin&replicaSet=atlas-fqrrap-shard-0&readPreference=primary&appname=MongoDB%20Compass&ssl=true`
 )
   .then(() => {
     console.log('connected to db');
@@ -35,6 +35,7 @@ app.post("/api/posts", (req, res, next) => {
     title: req.body.title,
     content: req.body.content,
   });
+  post.save();
   res.status(201).json({
     message: "Post added successfully",
   });
