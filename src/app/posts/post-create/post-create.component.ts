@@ -1,6 +1,7 @@
-import { formatCurrency } from '@angular/common';
+
 import { Component, OnInit } from '@angular/core';
 import { NgForm } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 
 import { Post } from "../post.model";
 import { PostsService } from '../posts.service';
@@ -13,16 +14,37 @@ import { PostsService } from '../posts.service';
 export class PostCreateComponent implements OnInit {
   enteredTitle = '';
   enteredContent = '';
+  public  post: Post
+  private mode = 'create';
+  private postId: string;
 
-  constructor(public postsService: PostsService) {}
+  constructor(public postsService: PostsService, public route: ActivatedRoute) {}
 
-  ngOnInit() {}
+  ngOnInit() {
+    this.route.paramMap.subscribe((ParamMap) => {
+      if (ParamMap.has('postId')) {
+        this.mode = 'edit';
+        this.postId = ParamMap.get('postId');
+        this.postsService.getPost(this.postId).subscribe(postData => {
+          this.post = {id: postData._id, title: postData.title, content: postData.content}
+        });
+      } else {
+        this.mode = 'create';
+        this.postId = null;
+      }
 
-  onAddPost(postForm: NgForm) {
+    }); // observe changes in the url params, doesn't need to rerender entire component
+  }
+
+  onSavePost(postForm: NgForm) {
     if (postForm.invalid) {
       return;
     }
-    this.postsService.addPost(postForm.value.title, postForm.value.content);
+    if (this.mode === 'create') {
+      this.postsService.addPost(postForm.value.title, postForm.value.content);
+    } else {
+     this.postsService.updatePost(this.postId, postForm.value.title, postForm.value.content)
+    }
     postForm.resetForm();
   }
 }
