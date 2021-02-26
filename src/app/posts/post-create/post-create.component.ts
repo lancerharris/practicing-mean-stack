@@ -1,9 +1,8 @@
-
 import { Component, OnInit } from '@angular/core';
-import { NgForm } from '@angular/forms';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 
-import { Post } from "../post.model";
+import { Post } from '../post.model';
 import { PostsService } from '../posts.service';
 
 @Component({
@@ -15,41 +14,62 @@ export class PostCreateComponent implements OnInit {
   enteredTitle = '';
   enteredContent = '';
   isLoading = false;
-  startSpinner = false
-  public  post: Post
+  form: FormGroup;
+  public post: Post;
   private mode = 'create';
   private postId: string;
 
-  constructor(public postsService: PostsService, private route: ActivatedRoute) {}
+  constructor(
+    public postsService: PostsService,
+    private route: ActivatedRoute
+  ) {}
 
   ngOnInit() {
+    this.form = new FormGroup({
+      title: new FormControl(null, {
+        validators: [Validators.required, Validators.minLength(3)],
+      }),
+      content: new FormControl(null, { validators: [Validators.required] }),
+    });
     this.route.paramMap.subscribe((ParamMap) => {
       if (ParamMap.has('postId')) {
         this.mode = 'edit';
         this.postId = ParamMap.get('postId');
         this.isLoading = true;
-        this.postsService.getPost(this.postId).subscribe(postData => {
-          this.isLoading = false
-          this.post = {id: postData._id, title: postData.title, content: postData.content}
+        this.postsService.getPost(this.postId).subscribe((postData) => {
+          this.isLoading = false;
+          this.post = {
+            id: postData._id,
+            title: postData.title,
+            content: postData.content,
+          };
+          this.form.setValue({
+            title: this.post.title,
+            content: this.post.content,
+          });
         });
+
       } else {
         this.mode = 'create';
         this.postId = null;
       }
-
     }); // observe changes in the url params, doesn't need to rerender entire component
   }
 
-  onSavePost(postForm: NgForm) {
-    if (postForm.invalid) {
+  onSavePost() {
+    if (this.form.invalid) {
       return;
     }
     if (this.mode === 'create') {
-      this.postsService.addPost(postForm.value.title, postForm.value.content);
+      this.postsService.addPost(this.form.value.title, this.form.value.content);
     } else {
-     this.postsService.updatePost(this.postId, postForm.value.title, postForm.value.content)
+      this.postsService.updatePost(
+        this.postId,
+        this.form.value.title,
+        this.form.value.content
+      );
     }
-      this.isLoading = true;
-    // postForm.resetForm();
+    this.isLoading = true;
+    // this.form.resetForm();
   }
 }
