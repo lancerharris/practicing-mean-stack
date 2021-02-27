@@ -45,3 +45,6 @@ nodemon.json
 # System Files
 .DS_Store
 Thumbs.db
+
+#images
+express-backend/images
