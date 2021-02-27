@@ -1,5 +1,3 @@
-
-import { formatCurrency } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { NgForm } from '@angular/forms';
 import { AuthService } from '../auth.service';
@@ -21,6 +19,7 @@ export class LoginComponent implements OnInit {
     if (loginForm.invalid) {
       return;
     }
+    this.isLoading = true;
     this.authService.login(loginForm.value.email, loginForm.value.password)
   }
 }
