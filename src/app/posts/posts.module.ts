@@ -16,10 +16,6 @@ import { RouterModule } from '@angular/router';
     ReactiveFormsModule,
     RouterModule,
     AngularMaterialModule
-  ],
-  exports: [
-    PostCreateComponent,
-    PostListComponent
   ]
 })
 export class PostsModule { }
