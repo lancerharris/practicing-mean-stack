@@ -4,7 +4,7 @@ const multer = require("multer");
 const router = express.Router();
 
 const Post = require("../models/post");
-const checkAuth = require("../middleware/check-auth")
+const checkAuth = require("../middleware/check-auth");
 
 const MIME_TYPE_MAP = {
   "image/png": "png",
@@ -40,17 +40,24 @@ router.post(
       creator: req.userData.userId,
       imagePath: url + "/images/" + req.file.filename, // req.file.filename provided by multer
     });
-    post.save().then((createdPost) => {
-      res.status(201).json({
-        message: "Post added successfully",
-        post: {
-          title: createdPost.title,
-          content: createdPost.content,
-          imagePath: createdPost.imagePath,
-          id: createdPost._id,
-        },
+    post
+      .save()
+      .then((createdPost) => {
+        res.status(201).json({
+          message: "Post added successfully",
+          post: {
+            title: createdPost.title,
+            content: createdPost.content,
+            imagePath: createdPost.imagePath,
+            id: createdPost._id,
+          },
+        });
+      })
+      .catch((error) => {
+        res.status(500).json({
+          messgae: "Creating a post failed",
+        });
       });
-    });
   }
 );
 
@@ -69,15 +76,21 @@ router.put(
       title: req.body.title,
       content: req.body.content,
       imagePath: imagePath,
-      creator: req.userData.userId
+      creator: req.userData.userId,
     });
-    Post.updateOne({ _id: req.params.id, creator: req.userData.userId }, post).then((result) => {
-      if (result.nModified > 0) {
-        res.status(200).json({ message: "update successful" });
-      } else {
-        res.status(401).json({ message: "Not authorized" });
-      }
-    });
+    Post.updateOne({ _id: req.params.id, creator: req.userData.userId }, post)
+      .then((result) => {
+        if (result.nModified > 0) {
+          res.status(200).json({ message: "update successful" });
+        } else {
+          res.status(401).json({ message: "Not authorized" });
+        }
+      })
+      .catch((error) => {
+        res.status(500).json({
+          messgae: "Updating a post failed",
+        });
+      });
   }
 );
 
@@ -87,20 +100,25 @@ router.get("", (req, res, next) => {
   const postQuery = Post.find();
   let fetchedPosts;
   if (pageSize && currentPage) {
-    postQuery
-      .skip(pageSize * (currentPage - 1))
-      .limit(pageSize);
+    postQuery.skip(pageSize * (currentPage - 1)).limit(pageSize);
   }
-  postQuery.then((docs) => {
-    fetchedPosts = docs
-    return Post.count();
-  }).then(count => {
-    res.status(200).json({
-      message: "posts fetched successfully",
-      posts: fetchedPosts,
-      maxPosts: count
-    });
-  })
+  postQuery
+    .then((docs) => {
+      fetchedPosts = docs;
+      return Post.count();
+    })
+    .then((count) => {
+      res.status(200).json({
+        message: "posts fetched successfully",
+        posts: fetchedPosts,
+        maxPosts: count,
+      });
+    })
+    .catch(error => {
+      res.status(500).json({
+        messgae: 'Getting posts failed'
+      })
+    });;
 });
 
 router.get("/:id", (req, res, next) => {
@@ -110,17 +128,27 @@ router.get("/:id", (req, res, next) => {
     } else {
       res.status(404).json({ message: "Post not found" });
     }
-  });
+  }).catch(error => {
+    res.status(500).json({
+      messgae: 'Fetching a post failed'
+    })
+  });;
 });
 
 router.delete("/:id", checkAuth, (req, res, next) => {
-  Post.deleteOne({ _id: req.params.id, creator: req.userData.userId  }).then((result) => {
-    if (result.n > 0) {
-      res.status(200).json({ message: "Post deleted" });
-    } else {
-      res.status(401).json({ message: "Not authorized" });
+  Post.deleteOne({ _id: req.params.id, creator: req.userData.userId }).then(
+    (result) => {
+      if (result.n > 0) {
+        res.status(200).json({ message: "Post deleted" });
+      } else {
+        res.status(401).json({ message: "Not authorized" });
+      }
     }
-  });
+  ).catch(error => {
+    res.status(500).json({
+      messgae: 'Deleting the post failed'
+    })
+  });;
 });
 
 module.exports = router;
